@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>גמל המדבר - משחק מחיאות כף</title>
+  <style>
+    :root {
+      --sand-light: #fdf6e3;
+      --sand-mid: #f3dfb3;
+      --sand-dark: #d8b46c;
+      --cactus-green: #2e7d32;
+      --camel-brown: #9c5a2b;
+      --camel-dark: #6d3b19;
+      --ink: #2b2118;
+      --accent: #e67e22;
+      --card-bg: rgba(255, 252, 244, 0.92);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(180deg, #fff3d6 0%, var(--sand-light) 65%, var(--sand-mid) 100%);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* סרגל ניווט */
+    nav {
+      background: var(--card-bg);
+      border-bottom: 2px solid var(--sand-dark);
+      padding: 0.9rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 10px rgba(43, 33, 24, 0.06);
+    }
+
+    .brand {
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--camel-dark);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: 2px solid transparent;
+      color: var(--ink);
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 0.45rem 1rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      background: var(--sand-mid);
+    }
+
+    .nav-btn.active {
+      background: var(--camel-brown);
+      color: #fff;
+      border-color: var(--camel-dark);
+    }
+
+    /* עמודים */
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    .page {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* דף הבית */
+    .hero {
+      background: var(--card-bg);
+      border: 2px solid var(--sand-dark);
+      border-radius: 24px;
+      padding: 2.2rem;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(109, 59, 25, 0.08);
+    }
+
+    .hero h1 {
+      font-size: 2.2rem;
+      color: var(--camel-dark);
+      margin-bottom: 0.75rem;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      line-height: 1.65;
+      max-width: 640px;
+      margin: 0 auto 1.6rem;
+    }
+
+    .cta-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      font-size: 1.15rem;
+      font-weight: 800;
+      padding: 0.85rem 2rem;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #b85d0d;
+      transition: transform 0.1s ease, background 0.2s ease;
+    }
+
+    .cta-btn:hover {
+      background: #d36d12;
+    }
+
+    .cta-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #b85d0d;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+      text-align: right;
+    }
+
+    .feature-card {
+      background: #fff;
+      border: 1.5px solid var(--sand-dark);
+      border-radius: 16px;
+      padding: 1.1rem;
+    }
+
+    .feature-card h3 {
+      margin-bottom: 0.4rem;
+      color: var(--camel-dark);
+      font-size: 1.05rem;
+    }
+
+    .feature-card p {
+      font-size: 0.95rem;
+      margin: 0;
+      color: #4a3b2c;
+    }
+
+    /* דף המשחק */
+    .game-wrapper {
+      background: var(--card-bg);
+      border: 2px solid var(--sand-dark);
+      border-radius: 24px;
+      padding: 1.25rem;
+      box-shadow: 0 10px 30px rgba(109, 59, 25, 0.08);
+    }
+
+    .game-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .scoreboard {
+      display: flex;
+      gap: 1rem;
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+
+    .score-pill {
+      background: #fff;
+      border: 2px solid var(--sand-dark);
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 0.55rem 1.05rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s ease, transform 0.1s ease;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--cactus-green);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: var(--camel-brown);
+      color: #fff;
+    }
+
+    .btn-outline {
+      background: #fff;
+      color: var(--ink);
+      border: 1.5px solid var(--sand-dark);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 16px;
+      border: 2px solid var(--sand-dark);
+      background: linear-gradient(180deg, #ffeab8 0%, #fff6dc 62%, #efd08e 62%, #e4be72 100%);
+    }
+
+    .status-bar {
+      margin-top: 0.85rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      font-size: 0.95rem;
+    }
+
+    .clap-meter {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 220px;
+    }
+
+    .meter-track {
+      flex: 1;
+      height: 12px;
+      background: #e9dcc2;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--sand-dark);
+    }
+
+    .meter-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #f39c12, #e74c3c);
+      transition: width 0.08s linear;
+    }
+
+    .hint {
+      color: #5c4936;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="brand">🐪 גמל המדבר</div>
+    <div class="nav-links">
+      <button class="nav-btn active" data-page="home" onclick="showPage('home')">דף הבית</button>
+      <button class="nav-btn" data-page="game" onclick="showPage('game')">דף המשחק</button>
+    </div>
+  </nav>
+
+  <main>
+    <!-- דף הבית -->
+    <section id="page-home" class="page active">
+      <div class="hero">
+        <h1>מחאו כף והקפיצו את הגמל!</h1>
+        <p>
+          ברוכים הבאים ל<strong>גמל המדבר</strong> — משחק ארקייד מהיר בהשראת משחק הדינוזאור של גוגל.
+          הגמל רץ במדבר, והקקטוסים מתקרבים. מחאו כף כדי להקפיץ אותו בזמן ולשבור שיאים!
+        </p>
+        <button class="cta-btn" onclick="showPage('game')">מעבר למשחק ←</button>
+
+        <div class="features">
+          <div class="feature-card">
+            <h3>👏 שליטה במחיאות כף</h3>
+            <p>מבוסס על מודל האודיו שלך ב-Teachable Machine לזיהוי מחיאות כף בזמן אמת דרך המיקרופון.</p>
+          </div>
+          <div class="feature-card">
+            <h3>🌵 אתגר מדברי מתגבר</h3>
+            <p>ככל שהניקוד עולה, מהירות הריצה גדלה והקקטוסים מופיעים במרווחים מאתגרים יותר.</p>
+          </div>
+          <div class="feature-card">
+            <h3>⌨️ גיבוי נוח למקלדת</h3>
+            <p>אפשר לקפוץ גם בעזרת מקש <strong>רווח (Space)</strong> או לחיצה על המסך אם אין מיקרופון זמין.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- דף המשחק -->
+    <section id="page-game" class="page">
+      <div class="game-wrapper">
+        <div class="game-header">
+          <div class="scoreboard">
+            <div class="score-pill">ניקוד: <span id="score">0</span></div>
+            <div class="score-pill">שיא: <span id="high-score">0</span></div>
+          </div>
+
+          <div class="controls">
+            <button id="mic-btn" class="btn btn-primary" onclick="toggleMicrophone()">הפעל מיקרופון</button>
+            <button id="restart-btn" class="btn btn-secondary" onclick="resetAndStartGame()">התחל משחק</button>
+            <button class="btn btn-outline" onclick="camelJump()">קפיצה ידנית</button>
+          </div>
+        </div>
+
+        <canvas id="game-canvas" width="840" height="320"></canvas>
+
+        <div class="status-bar">
+          <div id="status-text">סטטוס: ממתין להפעלת מיקרופון או התחלת משחק</div>
+          <div class="clap-meter">
+            <span>זיהוי מחיאה:</span>
+            <div class="meter-track">
+              <div id="clap-bar" class="meter-fill"></div>
+            </div>
+          </div>
+        </div>
+        <p class="hint" style="margin-top: 0.5rem;">
+          טיפ: מחאו כף חדה וברורה. ניתן גם ללחוץ על <strong>רווח (Space)</strong> לקפיצה.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <!-- TensorFlow.js + Teachable Machine Audio -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tfjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.4.0/dist/speech-commands.min.js"></script>
+
+  <script>
+    const MODEL_URL = "https://teachablemachine.withgoogle.com/models/j9KffZdV8/";
+
+    // --- ניווט בין דפים בקובץ יחיד ---
+    function showPage(pageName) {
+      document.querySelectorAll(".page").forEach((el) => el.classList.remove("active"));
+      document.querySelectorAll(".nav-btn").forEach((btn) => btn.classList.remove("active"));
+
+      document.getElementById(`page-${pageName}`).classList.add("active");
+      document.querySelector(`.nav-btn[data-page="${pageName}"]`).classList.add("active");
+
+      if (pageName !== "game") {
+        isRunning = false;
+      }
+    }
+
+    // --- זיהוי מחיאות כף עם Teachable Machine ---
+    let recognizer = null;
+    let micActive = false;
+    let lastClapTime = 0;
+    const CLAP_COOLDOWN_MS = 380; // מניעת קפיצות כפולות ממחיאה אחת
+    const CLAP_THRESHOLD = 0.78;
+
+    async function toggleMicrophone() {
+      const micBtn = document.getElementById("mic-btn");
+      const statusText = document.getElementById("status-text");
+
+      if (micActive && recognizer) {
+        await recognizer.stopListening();
+        micActive = false;
+        micBtn.textContent = "הפעל מיקרופון";
+        statusText.textContent = "סטטוס: המיקרופון כבוי";
+        document.getElementById("clap-bar").style.width = "0%";
+        return;
+      }
+
+      try {
+        micBtn.disabled = true;
+        statusText.textContent = "סטטוס: טוען מודל זיהוי מחיאות כף...";
+
+        if (!recognizer) {
+          const checkpointURL = MODEL_URL + "model.json";
+          const metadataURL = MODEL_URL + "metadata.json";
+          recognizer = speechCommands.create("BROWSER_FFT", undefined, checkpointURL, metadataURL);
+          await recognizer.ensureModelLoaded();
+        }
+
+        const classLabels = recognizer.wordLabels();
+
+        await recognizer.listen(
+          (result) => {
+            const scores = result.scores;
+            let clapScore = 0;
+            let bestLabel = "";
+            let bestScore = 0;
+
+            for (let i = 0; i < classLabels.length; i++) {
+              const label = classLabels[i];
+              const score = scores[i];
+              if (score > bestScore) {
+                bestScore = score;
+                bestLabel = label;
+              }
+              if (
+                label.toLowerCase().includes("clap") ||
+                label.includes("מחיא") ||
+                label.toLowerCase().includes("כף")
+              ) {
+                clapScore = Math.max(clapScore, score);
+              }
+            }
+
+            // אם אין תווית עם שם מפורש של מחיאה, נשתמש בציון הגבוה שאינו רעש רקע
+            if (clapScore === 0) {
+              const nonNoise = classLabels
+                .map((lbl, idx) => ({ lbl, score: scores[idx] }))
+                .filter((item) => {
+                  const l = item.lbl.toLowerCase();
+                  return !l.includes("background") && !l.includes("noise") && !l.includes("רקע");
+                });
+              if (nonNoise.length > 0) {
+                clapScore = Math.max(...nonNoise.map((x) => x.score));
+              }
+            }
+
+            document.getElementById("clap-bar").style.width = `${Math.min(100, Math.round(clapScore * 100))}%`;
+
+            const now = performance.now();
+            if (clapScore >= CLAP_THRESHOLD && now - lastClapTime > CLAP_COOLDOWN_MS) {
+              lastClapTime = now;
+              if (!isRunning || isGameOver) {
+                resetAndStartGame();
+              }
+              camelJump();
+            }
+          },
+          {
+            includeSpectrogram: false,
+            probabilityThreshold: 0.5,
+            invokeCallbackOnNoiseAndUnknown: true,
+            overlapFactor: 0.5,
+          }
+        );
+
+        micActive = true;
+        micBtn.textContent = "כבה מיקרופון";
+        statusText.textContent = `סטטוס: מאזין למחיאות כף (${classLabels.join(", ")})`;
+      } catch (err) {
+        console.error(err);
+        statusText.textContent = "שגיאה בהפעלת המיקרופון. ודא שהרשאת מיקרופון מאושרת והדף מוגש ב-localhost/https.";
+      } finally {
+        micBtn.disabled = false;
+      }
+    }
+
+    // --- לוגיקת המשחק ---
+    const canvas = document.getElementById("game-canvas");
+    const ctx = canvas.getContext("2d");
+
+    const GROUND_Y = 265;
+    let isRunning = false;
+    let isGameOver = false;
+    let score = 0;
+    let highScore = Number(localStorage.getItem("desert_camel_highscore") || 0);
+    document.getElementById("high-score").textContent = highScore;
+
+    let speed = 6.2;
+    let spawnTimer = 0;
+    let legFrame = 0;
+
+    const camel = {
+      x: 90,
+      y: GROUND_Y,
+      width: 54,
+      height: 52,
+      vy: 0,
+      gravity: 0.72,
+      jumpPower: -14.2,
+      grounded: true,
+    };
+
+    let cacti = [];
+    let clouds = [
+      { x: 180, y: 58, scale: 1 },
+      { x: 520, y: 42, scale: 0.8 },
+      { x: 760, y: 72, scale: 1.1 },
+    ];
+
+    function camelJump() {
+      if (isGameOver) {
+        resetAndStartGame();
+        return;
+      }
+      if (!isRunning) {
+        isRunning = true;
+      }
+      if (camel.grounded) {
+        camel.vy = camel.jumpPower;
+        camel.grounded = false;
+      }
+    }
+
+    function resetAndStartGame() {
+      score = 0;
+      speed = 6.2;
+      spawnTimer = 35;
+      cacti = [];
+      camel.y = GROUND_Y;
+      camel.vy = 0;
+      camel.grounded = true;
+      isGameOver = false;
+      isRunning = true;
+      document.getElementById("score").textContent = "0";
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "Space") {
+        const gamePageVisible = document.getElementById("page-game").classList.contains("active");
+        if (gamePageVisible) {
+          e.preventDefault();
+          camelJump();
+        }
+      }
+    });
+
+    canvas.addEventListener("pointerdown", () => {
+      camelJump();
+    });
+
+    function spawnCactus() {
+      const variants = [
+        { w: 20, h: 42 },
+        { w: 26, h: 54 },
+        { w: 42, h: 44 },
+      ];
+      const v = variants[Math.floor(Math.random() * variants.length)];
+      cacti.push({
+        x: canvas.width + 20,
+        y: GROUND_Y,
+        width: v.w,
+        height: v.h,
+      });
+    }
+
+    function drawSunAndClouds() {
+      // שמש מדברית
+      ctx.fillStyle = "#ffbe3b";
+      ctx.beginPath();
+      ctx.arc(730, 58, 26, 0, Math.PI * 2);
+      ctx.fill();
+
+      // עננים
+      ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+      clouds.forEach((c) => {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 16 * c.scale, 0, Math.PI * 2);
+        ctx.arc(c.x + 14 * c.scale, c.y - 4 * c.scale, 18 * c.scale, 0, Math.PI * 2);
+        ctx.arc(c.x + 28 * c.scale, c.y, 14 * c.scale, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function drawGround() {
+      ctx.strokeStyle = "#b58938";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, GROUND_Y + 2);
+      ctx.lineTo(canvas.width, GROUND_Y + 2);
+      ctx.stroke();
+
+      // אבני מדבר קטנות
+      ctx.fillStyle = "#c89d4c";
+      for (let i = 0; i < 12; i++) {
+        const gx = ((i * 85 - score * 2.2) % canvas.width + canvas.width) % canvas.width;
+        ctx.fillRect(gx, GROUND_Y + 12 + (i % 3) * 12, 8, 3);
+      }
+    }
+
+    function drawCamel() {
+      const x = camel.x;
+      const topY = camel.y - camel.height;
+
+      // רגליים מתחלפות בזמן ריצה
+      ctx.strokeStyle = "#6d3b19";
+      ctx.lineWidth = 5;
+      ctx.lineCap = "round";
+
+      const legOffset = camel.grounded ? Math.sin(legFrame * 0.35) * 6 : 4;
+      // רגליים אחוריות
+      ctx.beginPath();
+      ctx.moveTo(x + 14, topY + 34);
+      ctx.lineTo(x + 12 - legOffset, camel.y);
+      ctx.moveTo(x + 22, topY + 34);
+      ctx.lineTo(x + 24 + legOffset, camel.y);
+      // רגליים קדמיות
+      ctx.beginPath();
+      ctx.moveTo(x + 36, topY + 34);
+      ctx.lineTo(x + 35 + legOffset, camel.y);
+      ctx.moveTo(x + 42, topY + 34);
+      ctx.lineTo(x + 44 - legOffset, camel.y);
+      ctx.stroke();
+
+      // גוף ודבשת
+      ctx.fillStyle = "#9c5a2b";
+      ctx.beginPath();
+      ctx.ellipse(x + 26, topY + 26, 20, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // דבשת חמודה
+      ctx.beginPath();
+      ctx.arc(x + 26, topY + 14, 10, Math.PI, 0);
+      ctx.fill();
+
+      // צוואר וראש
+      ctx.beginPath();
+      ctx.roundRect(x + 38, topY + 4, 11, 22, 5);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.roundRect(x + 38, topY + 2, 19, 13, 6);
+      ctx.fill();
+
+      // אוזן
+      ctx.beginPath();
+      ctx.ellipse(x + 42, topY + 1, 3, 6, -0.3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // עין
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(x + 50, topY + 6, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#1a120b";
+      ctx.beginPath();
+      ctx.arc(x + 51, topY + 6, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // זנב קטן
+      ctx.strokeStyle = "#6d3b19";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x + 6, topY + 24);
+      ctx.quadraticCurveTo(x - 3, topY + 28, x - 1, topY + 36);
+      ctx.stroke();
+    }
+
+    function drawCacti() {
+      ctx.fillStyle = "#2e7d32";
+      cacti.forEach((c) => {
+        const topY = c.y - c.height;
+        const trunkW = Math.min(12, c.width * 0.45);
+        const trunkX = c.x + (c.width - trunkW) / 2;
+
+        // גזע מרכזי
+        ctx.beginPath();
+        ctx.roundRect(trunkX, topY, trunkW, c.height, 5);
+        ctx.fill();
+
+        // זרוע שמאל
+        ctx.beginPath();
+        ctx.roundRect(c.x, topY + c.height * 0.35, trunkW * 0.8, 7, 3);
+        ctx.roundRect(c.x, topY + c.height * 0.15, 7, c.height * 0.25, 3);
+        ctx.fill();
+
+        // זרוע ימין
+        ctx.beginPath();
+        ctx.roundRect(trunkX + trunkW * 0.6, topY + c.height * 0.45, trunkW * 0.
